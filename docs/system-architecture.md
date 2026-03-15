@@ -200,6 +200,12 @@ After 10+ visits:
 - Confidence: 95%
 - Highly accurate predictions
 
+## ETA Prediction Flow
+
+![ETA Algorithm Flow](diagrams/eta-algorithm-flow.drawio.png)
+
+See [Hybrid ETA Algorithm](hybrid-eta-algorithm.md) for complete specification.
+
 ## Technology Stack
 
 ![Tech Stack](diagrams/tech-stack.png)
