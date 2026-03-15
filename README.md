@@ -22,20 +22,75 @@ See [System Architecture](docs/system-architecture.md) for detailed diagrams.
 
 ## Project Structure
 
+<table>
+<tr>
+<td width="50%" valign="top">
+
+<pre>
 axis/
+│
 ├── backend/
+│   └── .gitkeep
+│
 ├── frontend-web/
+│   └── .gitkeep
+│
 ├── frontend-mobile/
+│   └── .gitkeep
+│
 ├── docs/
-│   ├── diagrams/          ← Place your draw.io exports here
+│   │
+│   ├── diagrams/                    ← Place your draw.io exports here
+│   │   ├── create-task-flow.drawio.png
+│   │   ├── database-erd.drawio.png
+│   │   ├── module-integration.drawio.png
+│   │   ├── system-overview.drawio.png
+│   │   ├── tech-stack.drawio.png
+│   │   ├── work-travel-flow.drawio.png
+│   │   └── workout-session-flow.drawio.png
+│   │
 │   ├── system-architecture.md
 │   ├── database-schema.sql
 │   ├── hybrid-eta-algorithm.md
 │   ├── intelligence-hub.md
 │   ├── api-specification.md
 │   └── implementation-plan.md
+│
 ├── README.md
 └── .gitignore
+</pre>
+
+</td>
+<td width="50%" valign="top">
+
+**Directory Descriptions:**
+
+**`backend/`**  
+Django backend application (to be implemented)
+
+**`frontend-web/`**  
+React web application with TypeScript
+
+**`frontend-mobile/`**  
+React Native mobile app with Expo
+
+**`docs/`**  
+Complete project documentation
+
+**`docs/diagrams/`**  
+Architecture and flow diagrams (Draw.io exports)
+
+**Key Documentation:**
+- `system-architecture.md` - Architecture overview
+- `database-schema.sql` - PostgreSQL schema
+- `hybrid-eta-algorithm.md` - ETA prediction algorithm
+- `intelligence-hub.md` - Central intelligence system
+- `api-specification.md` - REST API endpoints
+- `implementation-plan.md` - Build roadmap
+
+</td>
+</tr>
+</table>
 
 
 ## Technology Stack
