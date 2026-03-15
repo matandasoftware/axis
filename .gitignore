@@ -71,3 +71,5 @@ Thumbs.db
 *.user
 *.userosscache
 *.sln.docstates
+
+docs/implementation-plan.md
