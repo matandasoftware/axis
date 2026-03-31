@@ -6,13 +6,6 @@ from .serializers import PlaceTypeSerializer, TravelModeSerializer, PlaceSeriali
 
 
 class PlaceTypeListCreateView(generics.ListCreateAPIView):
-    """
-    GET  /api/v1/locations/place-types/
-    POST /api/v1/locations/place-types/
-
-    - List returns system defaults (user=None) + user's own.
-    - Create always creates a user-owned type.
-    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = PlaceTypeSerializer
 
@@ -24,26 +17,15 @@ class PlaceTypeListCreateView(generics.ListCreateAPIView):
 
 
 class PlaceTypeDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    GET/PATCH/DELETE /api/v1/locations/place-types/<id>/
-
-    Only user-owned types are editable/deletable (system types are read-only).
-    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = PlaceTypeSerializer
 
     def get_queryset(self):
+        # Only user-owned types are editable/deletable
         return PlaceType.objects.filter(user=self.request.user)
 
 
 class TravelModeListCreateView(generics.ListCreateAPIView):
-    """
-    GET  /api/v1/locations/travel-modes/
-    POST /api/v1/locations/travel-modes/
-
-    - List returns system defaults (user=None) + user's own.
-    - Create always creates a user-owned travel mode.
-    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TravelModeSerializer
 
@@ -55,23 +37,15 @@ class TravelModeListCreateView(generics.ListCreateAPIView):
 
 
 class TravelModeDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    GET/PATCH/DELETE /api/v1/locations/travel-modes/<id>/
-
-    Only user-owned modes are editable/deletable (system modes are read-only).
-    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TravelModeSerializer
 
     def get_queryset(self):
+        # Only user-owned modes are editable/deletable
         return TravelMode.objects.filter(user=self.request.user)
 
 
 class PlaceListCreateView(generics.ListCreateAPIView):
-    """
-    GET  /api/v1/locations/places/
-    POST /api/v1/locations/places/
-    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = PlaceSerializer
 
@@ -88,9 +62,6 @@ class PlaceListCreateView(generics.ListCreateAPIView):
 
 
 class PlaceDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    GET/PATCH/DELETE /api/v1/locations/places/<id>/
-    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = PlaceSerializer
 

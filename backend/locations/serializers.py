@@ -73,24 +73,16 @@ class PlaceSerializer(serializers.ModelSerializer):
         return value
 
     def validate_place_type(self, place_type):
-        """
-        Allow linking to:
-        - system place types (user=None)
-        - user's own place types
-        Block linking to other users' place types.
-        """
+        # Allow system (user=None) and user's own; block other users'
         if place_type is None:
             return place_type
 
         request = self.context.get("request")
-        if request is None or request.user.is_anonymous:
-            return place_type
-
-        if place_type.user_id is None:
-            return place_type
-
-        if place_type.user_id != request.user.id:
-            raise serializers.ValidationError("Invalid place_type.")
+        if request and not request.user.is_anonymous:
+            if place_type.user_id is None:
+                return place_type
+            if place_type.user_id != request.user.id:
+                raise serializers.ValidationError("Invalid place_type.")
         return place_type
 
     def validate(self, attrs):
