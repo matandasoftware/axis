@@ -73,3 +73,7 @@ Thumbs.db
 *.sln.docstates
 
 docs/implementation-plan.md
+
+# Postman / local API testing artifacts
+.postman/
+postman/
