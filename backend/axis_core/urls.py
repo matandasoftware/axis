@@ -10,6 +10,7 @@ urlpatterns = [
     path("api/v1/auth/", include("accounts.urls")),
     path("api/v1/tasks/", include("tasks.urls")),
     path("api/v1/locations/", include("locations.urls")),
+    path("api/v1/intelligence/", include("intelligence.urls")),
 
     # Optional temporary backward compatibility (remove once frontend is updated)
     path("api/auth/", include("accounts.urls")),
