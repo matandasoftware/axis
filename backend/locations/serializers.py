@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import PlaceType, TravelMode, Place
+from .models import PlaceType, TravelMode, Place, LocationSample
 
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
@@ -90,3 +90,57 @@ class PlaceSerializer(serializers.ModelSerializer):
         if radius is not None and radius < 0:
             raise serializers.ValidationError({"radius_m": "Must be >= 0 meters."})
         return attrs
+
+
+class LocationSampleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LocationSample
+        fields = [
+            "id",
+            "recorded_at",
+            "latitude",
+            "longitude",
+            "accuracy_m",
+            "altitude_m",
+            "speed_mps",
+            "heading_deg",
+            "source",
+            "device_id",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
+
+    def validate_latitude(self, value):
+        if value < -90 or value > 90:
+            raise serializers.ValidationError("Latitude must be between -90 and 90.")
+        return value
+
+    def validate_longitude(self, value):
+        if value < -180 or value > 180:
+            raise serializers.ValidationError("Longitude must be between -180 and 180.")
+        return value
+
+    def validate_accuracy_m(self, value):
+        if value is not None and value < 0:
+            raise serializers.ValidationError("accuracy_m must be >= 0.")
+        return value
+
+    def validate_speed_mps(self, value):
+        if value is not None and value < 0:
+            raise serializers.ValidationError("speed_mps must be >= 0.")
+        return value
+
+    def validate_heading_deg(self, value):
+        if value is not None and (value < 0 or value >= 360):
+            raise serializers.ValidationError("heading_deg must be in [0, 360).")
+        return value
+
+
+class LocationSampleIngestSerializer(serializers.Serializer):
+    """
+    Bulk ingest format:
+    { "samples": [ {sample}, {sample}, ... ] }
+
+    We validate each entry using LocationSampleSerializer.
+    """
+    samples = LocationSampleSerializer(many=True)

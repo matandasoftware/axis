@@ -6,6 +6,8 @@ from .views import (
     TravelModeDetailView,
     PlaceListCreateView,
     PlaceDetailView,
+    LocationSampleIngestView,
+    LocationSampleListView,
 )
 
 urlpatterns = [
@@ -15,4 +17,6 @@ urlpatterns = [
     path("travel-modes/<int:pk>/", TravelModeDetailView.as_view(), name="travel-mode-detail"),
     path("places/", PlaceListCreateView.as_view(), name="place-list-create"),
     path("places/<int:pk>/", PlaceDetailView.as_view(), name="place-detail"),
+    path("samples/", LocationSampleIngestView.as_view(), name="location-sample-ingest"),
+    path("samples/list/", LocationSampleListView.as_view(), name="location-sample-list"),
 ]
