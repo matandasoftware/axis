@@ -1,12 +1,12 @@
 from django.db.models import Sum
 from django.utils.dateparse import parse_date
-from rest_framework import permissions, status
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from tasks.models import Task
-from .models import DailySummary
-from .serializers import DailySummarySerializer
+from .models import DailySummary, PatternRule
+from .serializers import DailySummarySerializer, PatternRuleSerializer
 
 
 class DailySummaryView(APIView):
@@ -111,3 +111,21 @@ class DailySummaryView(APIView):
         )
 
         return Response(DailySummarySerializer(summary).data, status=status.HTTP_200_OK)
+
+class PatternRuleListCreateView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PatternRuleSerializer
+
+    def get_queryset(self):
+        return PatternRule.objects.filter(user=self.request.user).order_by("-priority", "name")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class PatternRuleDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PatternRuleSerializer
+
+    def get_queryset(self):
+        return PatternRule.objects.filter(user=self.request.user)
