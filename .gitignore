@@ -80,3 +80,13 @@ postman/
 # Postman / local API testing artifacts
 .postman/
 postman/
+
+# Local sqlite / dev db artifacts
+db.sqlite3
+*.sqlite3
+
+# Local DB / docker volume artifacts (project-specific)
+axis_db
+
+# Accidental duplicate folder at repo root (outside backend/)
+axis_core/
