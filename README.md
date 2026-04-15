@@ -40,7 +40,7 @@ axis/
 │
 ├── docs/
 │   │
-│   ├── diagrams/                    ← Place your draw.io exports here
+│   ├── diagrams/                    ← draw.io exports here
 │   │   ├── create-task-flow.drawio.png
 │   │   ├── database-erd.drawio.png
 │   │   ├── module-integration.drawio.png
