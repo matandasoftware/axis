@@ -42,15 +42,21 @@ class DailySummaryView(APIView):
         tasks_created = qs.filter(created_at__date=parsed).count()
 
         # 2) Completed counts: tasks completed on that date (uses completed_at timestamp)
-        tasks_completed = qs.filter(status="completed", completed_at__date=parsed).count()
+        tasks_completed = qs.filter(
+            status=Task.Status.COMPLETED,
+            completed_at__date=parsed,
+        ).count()
 
         # 3) Cancelled counts:
         # If you have a dedicated cancelled_at later, switch to cancelled_at__date.
-        tasks_cancelled = qs.filter(status="cancelled", updated_at__date=parsed).count()
+        tasks_cancelled = qs.filter(
+            status=Task.Status.CANCELLED,
+            updated_at__date=parsed,
+        ).count()
 
         # 4) Minutes actual: sum of actual_duration for tasks completed on that date
         minutes_actual = (
-            qs.filter(status="completed", completed_at__date=parsed)
+            qs.filter(status=Task.Status.COMPLETED, completed_at__date=parsed)
             .aggregate(total=Sum("actual_duration"))
             .get("total")
             or 0
@@ -60,7 +66,8 @@ class DailySummaryView(APIView):
         if bucket == "scheduled":
             estimated_qs = qs.filter(scheduled_time__date=parsed)
         else:  # bucket == "due"
-            estimated_qs = qs.filter(due_date=parsed)
+            # due_date is DateTimeField, so matching by date is safer than equality.
+            estimated_qs = qs.filter(due_date__date=parsed)
 
         minutes_estimated = estimated_qs.aggregate(total=Sum("estimated_duration")).get("total") or 0
 
@@ -91,14 +98,16 @@ class DailySummaryView(APIView):
         summary.minutes_estimated = minutes_estimated
         summary.minutes_actual = minutes_actual
 
-        summary.save(update_fields=[
-            "tasks_created",
-            "tasks_completed",
-            "tasks_cancelled",
-            "minutes_estimated",
-            "minutes_actual",
-            "extra",
-            "updated_at",
-        ])
+        summary.save(
+            update_fields=[
+                "tasks_created",
+                "tasks_completed",
+                "tasks_cancelled",
+                "minutes_estimated",
+                "minutes_actual",
+                "extra",
+                "updated_at",
+            ]
+        )
 
         return Response(DailySummarySerializer(summary).data, status=status.HTTP_200_OK)
