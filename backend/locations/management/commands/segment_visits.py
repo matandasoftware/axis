@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Q
 
 from locations.models import LocationSample, VisitSegment, Place
 
@@ -132,6 +133,23 @@ class Command(BaseCommand):
                     f"(dwell {dwell}, dist={dist:.1f}m <= {effective_radius:.1f}m)"
                 )
             )
+
+            overlap_exists = VisitSegment.objects.filter(
+                user=user,
+                place=place,
+                arrived_at__lte=last_in_cluster.recorded_at,
+            ).filter(
+                Q(departed_at__isnull=True) | Q(departed_at__gte=cluster_start)
+            ).exists()
+
+            if overlap_exists:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"Skipping: overlapping VisitSegment exists for place={place.id} "
+                        f"{cluster_start} -> {last_in_cluster.recorded_at}"
+                    )
+                )
+                return
 
             if dry_run:
                 return
