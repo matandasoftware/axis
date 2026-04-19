@@ -128,8 +128,8 @@ class Command(BaseCommand):
                 return
 
             self.stdout.write(
-                self.style.SUCCESS(
-                    f"Visit: place={place.id} '{place.name}' {cluster_start} -> {last_in_cluster.recorded_at} "
+                self.style.WARNING(
+                    f"Visit candidate: place={place.id} '{place.name}' {cluster_start} -> {last_in_cluster.recorded_at} "
                     f"(dwell {dwell}, dist={dist:.1f}m <= {effective_radius:.1f}m)"
                 )
             )
@@ -150,6 +150,12 @@ class Command(BaseCommand):
                     )
                 )
                 return
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Creating visit: place={place.id} '{place.name}' {cluster_start} -> {last_in_cluster.recorded_at}"
+                )
+            )
 
             if dry_run:
                 return
