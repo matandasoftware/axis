@@ -95,6 +95,7 @@ class LocationSampleIngestView(APIView):
     - Uses bulk_create for speed
     """
     permission_classes = [permissions.IsAuthenticated]
+    throttle_scope = "location_ingest"
 
     def post(self, request):
         ingest = LocationSampleIngestSerializer(data=request.data)
@@ -123,6 +124,7 @@ class LocationSampleListView(generics.ListAPIView):
     """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = LocationSampleSerializer
+    throttle_scope = "default"
 
     def get_queryset(self):
         qs = LocationSample.objects.filter(user=self.request.user).order_by("-recorded_at")
