@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
-from locations.models import LocationSample, VisitSegment, Place
+from locations.models import LocationSample, VisitSegment, Place, VisitCandidate
 
 
 def haversine_m(lat1, lon1, lat2, lon2) -> float:
@@ -119,11 +119,45 @@ class Command(BaseCommand):
 
             if place is None:
                 skipped_no_place += 1
+
+                candidate_end = last_in_cluster.recorded_at
+                candidate_start = cluster_start
+
+                overlap_exists = VisitCandidate.objects.filter(
+                    user=user,
+                    status=VisitCandidate.STATUS_PENDING,
+                    arrived_at__lte=candidate_end,
+                ).filter(
+                    Q(departed_at__isnull=True) | Q(departed_at__gte=candidate_start)
+                ).exists()
+
+                if overlap_exists:
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"Pending VisitCandidate already exists for {candidate_start} -> {candidate_end} (dwell {dwell})"
+                        )
+                    )
+                    return
+
                 self.stdout.write(
                     self.style.WARNING(
-                        f"Visit candidate {cluster_start} -> {last_in_cluster.recorded_at} (dwell {dwell}) "
-                        f"no matching Place within radius."
+                        f"Unmatched visit candidate {candidate_start} -> {candidate_end} (dwell {dwell}) "
+                        f"no matching Place within radius; saved as VisitCandidate for review."
                     )
+                )
+
+                if dry_run:
+                    return
+
+                VisitCandidate.objects.create(
+                    user=user,
+                    arrived_at=candidate_start,
+                    departed_at=candidate_end,
+                    latitude=anchor.latitude,
+                    longitude=anchor.longitude,
+                    radius_m=int(radius_m),
+                    dwell_seconds=int(dwell.total_seconds()),
+                    status=VisitCandidate.STATUS_PENDING,
                 )
                 return
 

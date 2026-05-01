@@ -41,12 +41,6 @@ class PlaceType(models.Model):
 class TravelMode(models.Model):
     """
     Data-driven travel mode used for inference and user customization.
-
-    Speed bounds are optional hints (meters/second) for inference rules.
-    Examples:
-      walk ~ 0.5-2.0 m/s
-      run  ~ 2.0-5.0 m/s
-      car  ~ 5.0-40.0+ m/s
     """
 
     user = models.ForeignKey(
@@ -82,10 +76,6 @@ class TravelMode(models.Model):
 class Place(models.Model):
     """
     A user-saved place (Home, Gym, Office, etc.) that can be referenced by Tasks and Visits.
-
-    place_type is optional and data-driven via PlaceType so the UI can support:
-    - select existing type
-    - create a new type on the fly
     """
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='places')
@@ -132,13 +122,6 @@ class Place(models.Model):
 class LocationSample(models.Model):
     """
     Raw device location samples streamed from the phone.
-
-    This is the foundation for:
-    - travel mode inference (based on speed patterns)
-    - dwell time / visit segmentation (arrive -> stay -> depart)
-    - later ETA learning and personalization
-
-    recorded_at should be the device timestamp when the sample was collected.
     """
 
     SOURCE_CHOICES = [
@@ -186,10 +169,6 @@ class LocationSample(models.Model):
 class VisitSegment(models.Model):
     """
     Derived visit segment: "user stayed at Place from arrived_at to departed_at".
-
-    This can be:
-    - inferred from LocationSample stream (inferred=True)
-    - confirmed/created by user (inferred=False)
     """
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='visit_segments')
@@ -215,15 +194,66 @@ class VisitSegment(models.Model):
         return f"{self.user_id} visit {self.place_id} @ {self.arrived_at}"
 
 
+class VisitCandidate(models.Model):
+    """
+    A visit-like dwell cluster that couldn't be attached to a saved Place yet.
+    """
+
+    STATUS_PENDING = "pending"
+    STATUS_ACCEPTED = "accepted"
+    STATUS_REJECTED = "rejected"
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Pending"),
+        (STATUS_ACCEPTED, "Accepted"),
+        (STATUS_REJECTED, "Rejected"),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="visit_candidates")
+
+    arrived_at = models.DateTimeField()
+    departed_at = models.DateTimeField(blank=True, null=True)
+
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+
+    radius_m = models.IntegerField(blank=True, null=True)
+    dwell_seconds = models.IntegerField(blank=True, null=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+
+    place = models.ForeignKey(
+        Place,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="visit_candidates",
+    )
+    visit_segment = models.ForeignKey(
+        VisitSegment,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="source_candidates",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "visit_candidates"
+        ordering = ["-arrived_at"]
+        indexes = [
+            models.Index(fields=["user", "status", "arrived_at"]),
+            models.Index(fields=["user", "arrived_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user_id} candidate @ {self.arrived_at} ({self.status})"
+
+
 class TravelSegment(models.Model):
     """
     Derived travel segment: "user traveled from A to B from started_at to ended_at".
-
-    Mode can be:
-    - inferred_mode (computed by intelligence using speed/location samples)
-    - user_selected_mode (user override/confirmation)
-
-    We keep both to support learning + transparency.
     """
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='travel_segments')
