@@ -8,6 +8,10 @@ from .views import (
     PlaceDetailView,
     LocationSampleIngestView,
     LocationSampleListView,
+    VisitCandidateListView,
+    VisitCandidateAcceptView,
+    VisitCandidateRejectView,
+    PlaceSearchView,
 )
 
 urlpatterns = [
@@ -19,4 +23,8 @@ urlpatterns = [
     path("places/<int:pk>/", PlaceDetailView.as_view(), name="place-detail"),
     path("samples/", LocationSampleIngestView.as_view(), name="location-sample-ingest"),
     path("samples/list/", LocationSampleListView.as_view(), name="location-sample-list"),
+    path("visit-candidates/", VisitCandidateListView.as_view(), name="visit-candidate-list"),
+    path("visit-candidates/<int:pk>/accept/", VisitCandidateAcceptView.as_view(), name="visit-candidate-accept"),
+    path("visit-candidates/<int:pk>/reject/", VisitCandidateRejectView.as_view(), name="visit-candidate-reject"),
+    path("place-search/", PlaceSearchView.as_view(), name="place-search"),
 ]

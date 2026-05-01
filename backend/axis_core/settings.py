@@ -162,7 +162,17 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'default': '60/min',
         'location_ingest': '240/min',
+        'place_search': '60/min',
     },
+}
+
+# Cache (used for geocoding caching / cheap rate limiting)
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "axis-core-cache",
+        "TIMEOUT": 60 * 60 * 24,  # 24 hours
+    }
 }
 
 # JWT Settings
@@ -178,6 +188,10 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # Upload size limit
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
+
+# Geocoding defaults
+DEFAULT_PLACE_SEARCH_COUNTRY = config("DEFAULT_PLACE_SEARCH_COUNTRY", default="ZA")
+NOMINATIM_USER_AGENT = config("NOMINATIM_USER_AGENT", default="axis-core/1.0 (contact: admin@example.com)")
 
 # Media Files (uploaded files like profile pictures)
 MEDIA_URL = '/media/'

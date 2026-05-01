@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import PlaceType, TravelMode, Place, LocationSample
+from .models import PlaceType, TravelMode, Place, LocationSample, VisitCandidate, VisitSegment
 
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
@@ -144,3 +144,56 @@ class LocationSampleIngestSerializer(serializers.Serializer):
     We validate each entry using LocationSampleSerializer.
     """
     samples = LocationSampleSerializer(many=True)
+
+class VisitCandidateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VisitCandidate
+        fields = [
+            "id",
+            "arrived_at",
+            "departed_at",
+            "latitude",
+            "longitude",
+            "radius_m",
+            "dwell_seconds",
+            "status",
+            "place",
+            "visit_segment",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class InlinePlaceCreateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    address = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    radius_m = serializers.IntegerField(required=False, allow_null=True)
+
+    def validate_name(self, value: str) -> str:
+        value = (value or "").strip()
+        if not value:
+            raise serializers.ValidationError("Name cannot be empty.")
+        return value
+
+    def validate_radius_m(self, value):
+        if value is None:
+            return value
+        if value < 0:
+            raise serializers.ValidationError("radius_m must be >= 0.")
+        return value
+
+
+class VisitCandidateAcceptSerializer(serializers.Serializer):
+    place_id = serializers.IntegerField(required=False)
+    place = InlinePlaceCreateSerializer(required=False)
+
+    def validate(self, attrs):
+        place_id = attrs.get("place_id")
+        place = attrs.get("place")
+        if not place_id and not place:
+            raise serializers.ValidationError("Provide either place_id or place.")
+        if place_id and place:
+            raise serializers.ValidationError("Provide only one of place_id or place.")
+        return attrs
